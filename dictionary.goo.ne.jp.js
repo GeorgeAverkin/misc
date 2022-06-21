@@ -8,28 +8,57 @@
 // @description 6/20/2022, 9:46:39 PM
 // ==/UserScript==
 
-// document.addEventListener('onload', () => alert('ok'));
 document.body.onload = main
 
-function panic(msg) {
+function fullWidthToNumber(str) {
+  const callback = ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
+  return str.replace(/[\uff01-\uff5e]/g, callback)
+}
+
+function panic(msg, ...args) {
+  console.log(args)
   alert(msg)
   throw new Error(msg)
 }
 
-function removeEnumeration(content) {
+function fixEnumeration(content) {
+  let fixedOl = null
+
   return ol => {
-    let [li, ...liChildren] = ol.children
+    let [li, ...otherChildren] = ol.children
     
-    if (liChildren.length) {
+    if (otherChildren.length) {
       panic('There are other children in `ol`')
     }
-    let [p, ...pChildren] = li.children
+    let [p, ...otherChildren2] = li.children
     
-    if (pChildren.length) {
+    if (otherChildren2.length) {
       panic('There are other children in `li`')
     }
-    content.replaceChild(p, ol)
+    let [strong, ...otherChildren3] = p.children
+    
+    if (otherChildren3.length) {
+      panic('There are other children in `p`')
     }
+    let id = fullWidthToNumber(strong.innerHTML);
+    
+    if (isNaN(id)) {
+      panic('ID is not a number', strong)
+    }
+    id = Number(id)
+
+    if (id === 1) {
+      fixedOl = ol
+      console.log(fixedOl)
+    }
+    if (!fixedOl) {
+      panic('Unable to find first `ol`', ol)
+    }
+    if (id !== 1) {
+      fixedOl.appendChild(li)
+      ol.remove()
+    }
+  }
 }
 
 function main() {
@@ -50,5 +79,5 @@ function main() {
         panic('Unknown className of `ol` element')
       }
     })
-  meanings.forEach(removeEnumeration(content))
+  meanings.forEach(fixEnumeration(content))
 }
