@@ -56,6 +56,9 @@ function get_readings() {
     throw new Error()
   }
   const [on_label, on_data, kun_label, kun_data] = dl.children
+  const on_html = on_data.innerHTML.trim()
+  const kun_html = kun_data.innerHTML.trim()
+  return `【音】${on_html}【訓】${kun_html}`
 }
 
 function write_to_log() {
@@ -67,8 +70,9 @@ function write_to_log() {
 
 function format_text() {
   const meaning = get_meaning('<br/>')
+  const readings = get_readings()
   const element = document.querySelector('.meaning_block .block')
-  element.innerHTML = `検定<br/>${meaning}`
+  element.innerHTML = `検定${readings}<br/>${meaning}`
 }
 
 function add_button() {
