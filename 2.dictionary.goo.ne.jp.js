@@ -60,17 +60,28 @@ class KankenDom {
     }
     const dl = dl_list[0]
 
-    if (dl.children.length !== 4) {
+    if (dl.children.length === 4) {
+      const [on_label, on_data, kun_label, kun_data] = dl.children
+      const on_html = on_data.innerHTML.trim()
+      const kun_html = kun_data.innerHTML.trim()
+      return `【音】${on_html}【訓】${kun_html}`
+    }
+    if (dl.children.length !== 2) {
       throw new Error()
     }
-    const [on_label, on_data, kun_label, kun_data] = dl.children
-    const on_html = on_data.innerHTML.trim()
-    const kun_html = kun_data.innerHTML.trim()
-    return `【音】${on_html}【訓】${kun_html}`
+    const [label, data] = dl.children
+    const label_text = label.innerHTML.trim()
+    const label_kanji = label_text[0]
+
+    if (!"音訓".includes(label_kanji)) {
+      throw new Error()
+    }
+    const data_html = data.innerHTML.trim()
+    return `【${label_kanji}】${data_html}`
   }
 
   static get_info() {
-    const dl_list = document.querySelectorAll('.info > dl')
+    const dl_list = document.querySelectorAll('.midashi_block > .info > dl')
     
     if (dl_list.length !== 1) {
       throw new Error()
