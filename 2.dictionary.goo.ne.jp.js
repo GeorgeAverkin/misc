@@ -8,14 +8,12 @@
 // @description 9/11/2022, 7:49:51 PM
 // ==/UserScript==
 
-// The document isn't loaded on first event
-let FIRST_RUN = true
 const DELIMITERS = '⓪①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚㉛㉜㉝㉞㉟㊱㊲㊳㊴㊵㊶㊷㊸㊹㊺㊻㊼㊽㊾㊿';
 
 function parse_meaning(text, newline) {
   const buf = []
   const chars = [...text]
-  
+
   chars.forEach(char => {
     const is_newline = DELIMITERS.includes(char)
 
@@ -23,12 +21,12 @@ function parse_meaning(text, newline) {
       buf.push(newline)
     }
     buf.push(char)
-    
+
     if (is_newline) {
       buf.push('&nbsp;')
     }
   })
-  
+
   const formatted_text = buf.join('')
   return formatted_text
 }
@@ -44,12 +42,20 @@ class KankenDom {
     const meaning_block = meaning_blocks[0]
     const meaning_p_list = meaning_block.querySelectorAll('.block > .inner_block > p')
 
-    if (meaning_p_list.length !== 1) {
+    if (![1, 2].includes(meaning_p_list.length)) {
       throw new Error()
     }
     const meaning_p = meaning_p_list[0]
     const meaning = parse_meaning(meaning_p.innerHTML, newline)
-    return meaning
+
+    const sankou_p = meaning_p_list[1]
+
+    if (!sankou_p) {
+      return meaning
+    }
+    const sankou = parse_meaning(sankou_p.innerHTML, newline)
+    const description = [meaning, sankou].join(newline)
+    return description
   }
 
   static get_readings() {
@@ -82,13 +88,13 @@ class KankenDom {
 
   static get_info() {
     const dl_list = document.querySelectorAll('.midashi_block > .info > dl')
-    
+
     if (dl_list.length !== 1) {
       throw new Error()
     }
     const dl = dl_list[0]
-    
-    
+
+
     if (dl.children.length !== 8) {
       throw new Error()
     }
@@ -102,7 +108,7 @@ class KankenDom {
       kanken_label,
       kanken_data,
     ] = dl.children
-    
+
     const kanken_html = kanken_data.innerHTML.trim()
     return `【${kanken_html}】`
   }
@@ -125,7 +131,7 @@ function format_text() {
 
 function add_button() {
   const divider = document.getElementById('kanji_kanken-_')
-  
+
   if (!divider) {
     return
   }
